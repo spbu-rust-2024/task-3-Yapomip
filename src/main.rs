@@ -1,3 +1,5 @@
+mod color_out;
+
 mod application;
 use application::*;
 

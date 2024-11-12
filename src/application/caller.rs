@@ -1,6 +1,7 @@
+use crate::color_out::*;
+
 use calculate_lib::*;
 
-use colored::Colorize;
 use paste::paste;
 
 macro_rules! function_string_name {
@@ -82,14 +83,6 @@ create_call_function!(
     quadratic_coefficient_variation,
     variance
 );
-
-fn error(error_string: String) -> String
-{
-    format!("{}: {}",
-        "exit".truecolor(254, 47, 12),
-        error_string
-    )
-}
 
 const GENERALIZED_MEAN_DEFOULT_VALUE: u32 = 3;
 fn call_generalized_mean(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
@@ -366,20 +359,20 @@ macro_rules! list {
 pub fn list() {
     println!("-{}               {}", "all", "all functions start");
     list!(
-        variance,
-        quadratic_coefficient_variation,
-        linear_coefficient_variation,
-        average_quadratic_deviation,
-        average_linear_deviation,
-        moda_mean,
-        median_mean,
-        winsorizing_mean,
-        truncated_mean,
-        quasi_arithmetic_mean,
-        modified_arithmetic_geometric_mean,
-        arithmetic_geometric_mean,
-        generalized_mean,
-        geometric_mean,
         arithmetic_mean,
+        geometric_mean,
+        generalized_mean,
+        arithmetic_geometric_mean,
+        modified_arithmetic_geometric_mean,
+        quasi_arithmetic_mean,
+        truncated_mean,
+        winsorizing_mean,
+        median_mean,
+        moda_mean,
+        average_linear_deviation,
+        average_quadratic_deviation,
+        linear_coefficient_variation,
+        quadratic_coefficient_variation,
+        variance,
     ); 
 }
