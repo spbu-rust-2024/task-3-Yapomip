@@ -357,7 +357,6 @@ macro_rules! list {
 }
 
 pub fn list() {
-    println!("-{}               {}", "all", "all functions start");
     list!(
         arithmetic_mean,
         geometric_mean,

@@ -27,12 +27,12 @@ impl App {
         }
     }
     
-    fn parse_input(&mut self, input_command: &[&str], active_number: &mut usize) -> bool{
+    fn parse_input(&mut self, input_command: &[&str], active_number: &mut usize) -> bool {
         let mut answer: bool = false;
         
+        /* if 'input' parametr */
         if multi_campare!(input_command[*active_number], "-i", "--input") {
-            /* if 'input' parametr */
-            
+            /* set true answer */
             answer = true;
             /* set active next */
             *active_number += 1;
@@ -41,6 +41,7 @@ impl App {
             if *active_number < input_command.len() && !input_command[*active_number].starts_with("-") { 
                 /* if next exist & next not parametr*/
                 self.put.set_in(Some(input_command[*active_number].to_string()));
+                /* set active next */
                 *active_number += 1;
             } else {
                 /* if next not exist */
@@ -53,18 +54,18 @@ impl App {
     fn parse_output(&mut self, input_command: &[&str], active_number: &mut usize) -> bool {
         let mut answer: bool = false;
         
+        /* if 'output' parametr */
         if multi_campare!(input_command[*active_number], "-o", "--output") {
-            /* if 'output' parametr */
-            
+            /* set true answer */
             answer = true;
             /* set active next */
             *active_number += 1;
             /* input command not void string bc split_witespaces */
             if *active_number < input_command.len() && !input_command[*active_number].starts_with("-") {
-                /* set active next */
-                *active_number += 1;
                 /* if next exist & next not parametr*/
                 self.put.set_out(Some(input_command[*active_number].to_string()));
+                /* set active next */
+                *active_number += 1;
             } else {
                 /* if next not exist */
                 self.put.set_out(None);
@@ -77,10 +78,16 @@ impl App {
     fn parse_called_functions<'a>(&mut self, input_command: &[&'a str], active_number: &mut usize, functions_parametrs: &mut [Vec<Option<&'a str>>]) -> bool {
         let mut answer: bool = false;
 
+        /* if parametr */
         if let Some(parametr) = input_command[*active_number].strip_prefix("-") {
-            /* number of function */
+            /* if all */
             if parametr == "all" {
-                /* all function */
+                /* set true answer */
+                answer = true;
+                
+                /* set active next */
+                *active_number += 1;
+                /* all function turn */
                 for i in 0..functions_parametrs.len() {
                     /* add call for all */
                     functions_parametrs[i].push(None);
@@ -90,7 +97,9 @@ impl App {
                 if let Ok(mut number_function) = parametr.parse::<usize>() {
                     /* get number function */
                     if number_function > 0 && number_function < functions_parametrs.len() + 1 {
+                        /* if parametr correct */
                         
+                        /* set true answer */
                         answer = true;
                         /* set active next */
                         *active_number += 1;
@@ -99,6 +108,8 @@ impl App {
                         if *active_number < input_command.len() && !input_command[*active_number].starts_with("-") {
                             /* if next exist & not parametr */
                             functions_parametrs[number_function].push(Some(input_command[*active_number]));
+                            /* set active next */
+                            *active_number += 1;
                         } else {
                             functions_parametrs[number_function].push(None);
                         }
@@ -130,6 +141,7 @@ impl App {
             || input_command.cmp(["--list"].as_slice()) == Ordering::Equal
         {
             println!("all functions:");
+            println!("-{}               {}", "all", "all functions start with default value");
             caller::list();
             None
         } else {
@@ -173,5 +185,111 @@ impl App {
             
             self.put.data_out(answer);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_app_parse_input() {
+        let mut app = App::new();
+        
+        let mut active_number: usize = 0;
+        let commands = [
+            "-i",
+            "in.txt",
+            "--input",
+            "in.txt",
+            "--input",
+            "-i",
+            "-balbalbal",
+            "balbalbal",
+        ];
+        
+        assert_eq!(app.parse_input(commands.as_slice(), &mut active_number), true, "commands: '{}' '{}'", commands[0], commands[1]);
+        assert_eq!(active_number, 2);
+
+        assert_eq!(app.parse_input(commands.as_slice(), &mut active_number), true, "commands: '{}' '{}'", commands[2], commands[3]);
+        assert_eq!(active_number, 4);
+
+        assert_eq!(app.parse_input(commands.as_slice(), &mut active_number), true, "commands: '{}'", commands[4]);
+        assert_eq!(active_number, 5);
+        
+        assert_eq!(app.parse_input(commands.as_slice(), &mut active_number), true, "commands: '{}'", commands[5]);
+        assert_eq!(active_number, 6);
+
+        assert_eq!(app.parse_input(commands.as_slice(), &mut active_number), false, "commands: '{}'", commands[6]);
+        assert_eq!(active_number, 6);
+    }
+
+    #[test]
+    fn test_app_parse_output() {
+        let mut app = App::new();
+        
+        let mut active_number: usize = 0;
+        let commands = [
+            "-o",
+            "out.txt",
+            "--output",
+            "out.txt",
+            "--output",
+            "-o",
+            "-balbalbal",
+            "balbalbal",
+        ];
+        
+        assert_eq!(app.parse_output(commands.as_slice(), &mut active_number), true, "commands: '{}' '{}'", commands[0], commands[1]);
+        assert_eq!(active_number, 2);
+
+        assert_eq!(app.parse_output(commands.as_slice(), &mut active_number), true, "commands: '{}' '{}'", commands[2], commands[3]);
+        assert_eq!(active_number, 4);
+
+        assert_eq!(app.parse_output(commands.as_slice(), &mut active_number), true, "commands: '{}'", commands[4]);
+        assert_eq!(active_number, 5);
+        
+        assert_eq!(app.parse_output(commands.as_slice(), &mut active_number), true, "commands: '{}'", commands[5]);
+        assert_eq!(active_number, 6);
+
+        assert_eq!(app.parse_output(commands.as_slice(), &mut active_number), false, "commands: '{}'", commands[6]);
+        assert_eq!(active_number, 6);
+    }
+    #[test]
+    fn test_app_parse_called_functions() {
+        let mut app = App::new();
+        
+        let mut active_number: usize = 0;
+        let commands = [
+            "-3",
+            "5",
+            "-4",
+            "1000",
+            "-10",
+            "-all",
+            "-balbalbal",
+            "balbalbal",
+        ];
+        let mut functions_parametrs: Vec<Vec<Option<&str>>> = vec![Vec::new(); 10];
+        
+        assert_eq!(app.parse_called_functions(commands.as_slice(), &mut active_number, &mut functions_parametrs), true, 
+            "commands: '{}' '{}'", commands[0], commands[1]);
+        assert_eq!(active_number, 2, "commands: '{}' '{}'", commands[0], commands[1]);
+
+        assert_eq!(app.parse_called_functions(commands.as_slice(), &mut active_number, &mut functions_parametrs), true, 
+            "commands: '{}' '{}'", commands[2], commands[3]);
+        assert_eq!(active_number, 4, "commands: '{}' '{}'", commands[2], commands[3]);
+
+        assert_eq!(app.parse_called_functions(commands.as_slice(), &mut active_number, &mut functions_parametrs), true, 
+            "commands: '{}'", commands[4]);
+        assert_eq!(active_number, 5, "commands: '{}'", commands[4]);
+        
+        assert_eq!(app.parse_called_functions(commands.as_slice(), &mut active_number, &mut functions_parametrs), true, 
+            "commands: '{}'", commands[5]);
+        assert_eq!(active_number, 6, "commands: '{}'", commands[5]);
+
+        assert_eq!(app.parse_called_functions(commands.as_slice(), &mut active_number, &mut functions_parametrs), false, 
+            "commands: '{}'", commands[6]);
+        assert_eq!(active_number, 6, "commands: '{}'", commands[6]);
     }
 }
