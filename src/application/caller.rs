@@ -1,8 +1,13 @@
-use crate::color_out::*;
+mod generalized_mean;
+mod arithmetic_geometric_mean;
+mod modified_arithmetic_geometric_mean;
+mod truncated_mean;
+mod winsorizing_mean;
 
+use crate::color_out::*;
 use calculate_lib::*;
 
-use paste::paste;
+use clap::*;
 
 macro_rules! function_string_name {
     ( $function_expression:expr ) => {
@@ -14,334 +19,6 @@ macro_rules! function_string_name {
         )*
     };
 }
-
-macro_rules! if_some_macro {
-    ( $data:ident, $parametrs:ident, $param_string:ident : $if_some:expr => $else_some:expr ) => {
-        if $data.len() > 0 {
-            for param_option in $parametrs {
-                if let Some($param_string) = param_option {
-                    $if_some;
-                } else {
-                    $else_some;
-                }
-            }
-        }
-    };
-    ( $data:ident, $parametrs:ident : $if_some:expr , $else_some:expr ) => {
-        if $data.len() > 0 {
-            for param_option in $parametrs {
-                if let Some(param_string) = param_option {
-                    $if_some;
-                } else {
-                    $else_some;
-                }
-            }
-        }
-    };
-}
-
-macro_rules! create_call_function {
-    ( $function_name:ident, $func_string_name:expr, $func:expr ) => {
-        fn $function_name(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
-            let mut answer = String::new();
-            
-            if_some_macro!(data, parametrs, param_string :
-                answer += &error(format!("'{}' : have no parametr '{}'!\n", $func_string_name, param_string))
-                =>
-                answer += &format!("{} : {}\n", $func_string_name, $func(data))
-            );
-            // if data.len() > 0 {
-            //     for param_option in parametrs {
-            //         if let Some(param_string) = param_option {
-            //             answer += &error(format!("'{}' : have no parametr '{}'!\n", $func_string_name, param_string));
-            //         } else {
-            //             answer += &format!("{} : {}\n", $func_string_name, $func(data));
-            //         }
-            //     }
-            // }
-            
-            answer
-        }
-    };
-    ( $( $f:expr ),* $(,)? ) => {
-        paste! {
-            $(
-                create_call_function!([<call_ $f>], function_string_name!($f), $f);
-            )*
-        }
-    };
-}
-
-create_call_function!(
-    arithmetic_mean,
-    geometric_mean,
-    median_mean,
-    moda_mean,
-    average_linear_deviation,
-    average_quadratic_deviation,
-    linear_coefficient_variation,
-    quadratic_coefficient_variation,
-    variance
-);
-
-const GENERALIZED_MEAN_DEFOULT_VALUE: u32 = 3;
-fn call_generalized_mean(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
-    let mut answer = String::new();
-    let function_name: String = function_string_name!(generalized_mean);
-    
-    if_some_macro!(data, parametrs, param_string :
-        if let Ok(value) = param_string.parse::<u32>() {
-            if value > 0 && value < 300 {
-                answer += &format!(
-                    "{} ({}) : {}\n",
-                    function_name,
-                    value,
-                    generalized_mean(data, value)
-                );
-            } else {
-                answer += &error(format!(
-                    "'{}' ({}) : value must be more 0 and less 300\n",
-                    function_name,
-                    param_string,
-                ));
-            }
-        } else {
-            answer += &error(format!(
-                "'{}' ({}) : can't parse to u32\n",
-                function_name,
-                param_string,
-            ));
-        }
-        =>
-        answer += &format!("{} (def: {}) : {}\n",
-            function_name,
-            GENERALIZED_MEAN_DEFOULT_VALUE,
-            generalized_mean(data, GENERALIZED_MEAN_DEFOULT_VALUE)
-        )
-    );
-    
-    answer
-}
-
-const ARITHMETIC_GEOMETRIC_MEAN_DEFOULT_VALUE: u32 = 100;
-fn call_arithmetic_geometric_mean(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
-    let mut answer = String::new();
-    let function_name: String = function_string_name!(arithmetic_geometric_mean);
-    
-    if_some_macro!(data, parametrs, param_string :
-        if let Ok(value) = param_string.parse::<u32>() {
-            if value > 50 && value < 10000 {
-                answer += &format!("{} ({}) : \n", function_name, value);
-                arithmetic_geometric_mean(data, value)
-                    .iter()
-                    .enumerate()
-                    .for_each(|(i, x)| answer += &format!("    {} {} : {}\n", data[i], data[i + 1], *x));
-            } else {
-                answer += &error(format!(
-                    "'{}' ({}) : value must be more 50 and less 10000\n",
-                    function_name,
-                    param_string,
-                ));
-            }
-        } else {
-            answer += &error(format!(
-                "'{}' ({}) : can't parse to u32\n",
-                function_name,
-                param_string,
-            ));
-        }
-        =>
-        {
-            answer += &format!("{} (def: {}) : \n", function_name, ARITHMETIC_GEOMETRIC_MEAN_DEFOULT_VALUE);
-            arithmetic_geometric_mean(data, ARITHMETIC_GEOMETRIC_MEAN_DEFOULT_VALUE)
-                .iter()
-                .enumerate()
-                .for_each(|(i, x)| answer += &format!("    {} {} : {}\n", data[i], data[i + 1], *x));
-        }
-    );
-    
-    answer
-}
-const MODIFIED_ARITHMETIC_GEOMETRIC_MEAN_DEFOULT_VALUE: u32 = 100;
-fn call_modified_arithmetic_geometric_mean(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
-    let mut answer = String::new();
-    let function_name: String = function_string_name!(modified_arithmetic_geometric_mean);
-    
-    if_some_macro!(data, parametrs, param_string :
-        if let Ok(value) = param_string.parse::<u32>() {
-            if value > 50 && value < 10000 {
-                answer += &format!("{} ({}) : \n", function_name, value);
-                modified_arithmetic_geometric_mean(data, value)
-                    .iter()
-                    .enumerate()
-                    .for_each(|(i, x)| answer += &format!("    {} {} : {}\n", data[i], data[i + 1], *x));
-            } else {
-                answer += &error(format!(
-                    "'{}' ({}) : value must be more 50 and less 10000\n",
-                    function_name,
-                    param_string,
-                ));
-            }
-        } else {
-            answer += &error(format!(
-                "'{}' ({}) : can't parse to u32\n",
-                function_name,
-                param_string,
-            ));
-        }
-        =>
-        {
-            answer += &format!("{} (def: {}) : \n", function_name, MODIFIED_ARITHMETIC_GEOMETRIC_MEAN_DEFOULT_VALUE);
-            modified_arithmetic_geometric_mean(data, MODIFIED_ARITHMETIC_GEOMETRIC_MEAN_DEFOULT_VALUE)
-                .iter()
-                .enumerate()
-                .for_each(|(i, x)| answer += &format!("    {} {} : {}\n", data[i], data[i + 1], *x));
-        }
-    );
-
-    answer
-}
-
-const QUASI_ARITHMETIC_MEAN_DEFOULT_VALUE: usize = 1;
-fn call_quasi_arithmetic_mean(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
-    let mut answer = String::new();
-    let function_name: String = function_string_name!(quasi_arithmetic_mean);
-    let functions = [
-        |x: f64| -> f64 {
-            x.exp() + 2.0 * x * x + x + 5.0 
-        },
-    ];
-    
-    if_some_macro!(data, parametrs, param_string :
-        if let Ok(value) = param_string.parse::<usize>() {
-            if value > 0 && value < functions.len() + 1 {
-                answer += &format!("{} ({}) : {}\n", 
-                    function_name, 
-                    value, 
-                    quasi_arithmetic_mean(data, functions[value - 1])
-                );
-            } else {
-                answer += &error(format!(
-                    "'{}' ({}) : value must be more 1 and less {}\n",
-                    function_name,
-                    param_string,
-                    functions.len() + 1
-                ));
-            }
-        } else {
-            answer += &error(format!(
-                "'{}' ({}) : can't parse to usize\n",
-                function_name,
-                param_string,
-            ));
-        }
-        =>
-        answer += &format!("{} (def: {}) : {}\n", 
-            function_name, 
-            QUASI_ARITHMETIC_MEAN_DEFOULT_VALUE, 
-            quasi_arithmetic_mean(data, functions[QUASI_ARITHMETIC_MEAN_DEFOULT_VALUE - 1])
-        )
-    );
-    
-    answer
-}
-
-const TRUNCATED_MEAN_DEFOULT_VALUE: f64 = 0.20;
-fn call_truncated_mean(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
-    let mut answer = String::new();
-    let function_name: String = function_string_name!(truncated_mean);
-    
-    if_some_macro!(data, parametrs, param_string :
-        if let Ok(value) = param_string.parse::<f64>() {
-            if value > 0.0 && value < 0.49 {
-                answer += &format!("{} ({}) : {}\n", 
-                    function_name, 
-                    value, 
-                    truncated_mean(data, value)
-                );
-            } else {
-                answer += &error(format!(
-                    "'{}' ({}) : value must be more 0.0 and less 0.49\n",
-                    function_name,
-                    param_string,
-                ));
-            }
-        } else {
-            answer += &error(format!(
-                "'{}' ({}) : can't parse to f64\n",
-                function_name,
-                param_string,
-            ));
-        }
-        =>
-        answer += &format!("{} (def: {}) : {}\n", 
-            function_name, 
-            TRUNCATED_MEAN_DEFOULT_VALUE, 
-            truncated_mean(data, TRUNCATED_MEAN_DEFOULT_VALUE)
-        )
-    );
-    
-    answer
-}
-
-const WINSORIZING_MEAN_DEFOULT_VALUE: f64 = 0.20;
-fn call_winsorizing_mean(data: &[i64], parametrs: &Vec<Option<&str>>) -> String {
-    let mut answer = String::new();
-    let function_name: String = function_string_name!(winsorizing_mean);
-    
-    if_some_macro!(data, parametrs, param_string :
-        if let Ok(value) = param_string.parse::<f64>() {
-            if value > 0.0 && value < 0.49 {
-                answer += &format!("{} ({}) : {}\n", 
-                    function_name, 
-                    value, 
-                    winsorizing_mean(data, value)
-                );
-            } else {
-                answer += &error(format!(
-                    "'{}' ({}) : value must be more 0.0 and less 0.49\n",
-                    function_name,
-                    param_string,
-                ));
-            }
-        } else {
-            answer += &error(format!(
-                "'{}' ({}) : can't parse to f64\n",
-                function_name,
-                param_string,
-            ));
-        }
-        =>
-        answer += &format!("{} (def: {}) : {}\n", 
-            function_name, 
-            WINSORIZING_MEAN_DEFOULT_VALUE, 
-            winsorizing_mean(data, WINSORIZING_MEAN_DEFOULT_VALUE)
-        )
-    );
-    
-    answer
-}
-
-
-pub const NUM_CALL_FUNCTIONS: usize = 15;
-pub const CALL_FUNCTIONS_MASS: [fn (&[i64], &Vec<Option<&str>>) -> String; NUM_CALL_FUNCTIONS] = [
-    call_arithmetic_mean,
-    call_geometric_mean,
-    call_generalized_mean,
-    call_arithmetic_geometric_mean,
-    call_modified_arithmetic_geometric_mean,
-    call_quasi_arithmetic_mean,
-    call_truncated_mean,
-    call_winsorizing_mean,
-    call_median_mean,
-    call_moda_mean,
-    call_average_linear_deviation,
-    call_average_quadratic_deviation,
-    call_linear_coefficient_variation,
-    call_quadratic_coefficient_variation,
-    call_variance
-];
-
 
 macro_rules! list {
     ( $( $function:expr, )* $(,)? ) => {
@@ -374,4 +51,215 @@ pub fn list() {
         quadratic_coefficient_variation,
         variance,
     ); 
+}
+
+macro_rules! func_name {
+    ( $f_name:expr ) => {
+        stringify!($f_name).replace("_", " ")
+    };
+}
+macro_rules! create_arg {
+    ( $f:expr, $short:expr, $help:expr, $action:expr $(,)? ) => {
+        {
+            Arg::new($f)
+                .short($short)
+                .long($f)
+                .help($help)
+                .action($action)
+        }
+    };
+    ( $short:literal, $f:expr $(,)? ) => {
+        create_arg!(stringify!($f), $short, func_name!($f), ArgAction::SetTrue)
+    };
+}
+
+pub const NUM_CALL_FUNCTIONS: usize = 15;
+
+pub struct Caller {
+    call_parametrs: [bool; NUM_CALL_FUNCTIONS],
+    
+    generalized_mean_value: u32,
+    arithmetic_geometric_mean_value: f64,
+    modified_arithmetic_geometric_mean_value: f64,
+    truncated_mean_value: f64,
+    winsorizing_mean_value: f64,
+    
+}
+
+impl Caller {
+    pub fn new() -> Caller {
+        Caller {
+            call_parametrs: [false; NUM_CALL_FUNCTIONS],
+            
+            generalized_mean_value: generalized_mean::DEFOULT,
+            arithmetic_geometric_mean_value: arithmetic_geometric_mean::DEFOULT,
+            modified_arithmetic_geometric_mean_value: modified_arithmetic_geometric_mean::DEFOULT,
+            truncated_mean_value: truncated_mean::DEFOULT,
+            winsorizing_mean_value: winsorizing_mean::DEFOULT,
+        }
+    }
+    
+    pub fn add_args(cmd: Command) -> Command {
+        let args = [
+            create_arg!('1', arithmetic_mean),
+            create_arg!('2', geometric_mean),
+            
+            create_arg!("generalized_mean", '3', "generalized mean (value from 1 to 100)", ArgAction::Append)
+                    .num_args(0..=1)
+                    .value_name("d")
+                    .value_parser(value_parser!(u32)),
+            create_arg!("arithmetic_geometric_mean", '4', "arithmetic geometric mean (epsilon for accuracy)", ArgAction::Append)
+                    .num_args(0..=1)
+                    .value_name("epsilon")
+                    .value_parser(value_parser!(f64)),
+            create_arg!("modified_arithmetic_geometric_mean", '5', "modified arithmetic geometric mean (epsilon for accuracy)", ArgAction::Append)
+                    .num_args(0..=1)
+                    .value_name("epsilon")
+                    .value_parser(value_parser!(f64)),
+            
+            create_arg!('6', quasi_arithmetic_mean),
+
+            create_arg!("truncated_mean", '7', "truncated mean (p - procent to cancel)", ArgAction::Append)
+                    .num_args(0..=1)
+                    .value_name("p")
+                    .value_parser(value_parser!(f64)),
+            create_arg!("winsorizing_mean", '8', "winsorizing mean (p - procent to cancel)", ArgAction::Append)
+                    .num_args(0..=1)
+                    .value_name("p")
+                    .value_parser(value_parser!(f64)),
+            
+            create_arg!('a', median_mean),
+            create_arg!('9', moda_mean),
+            create_arg!('b', average_linear_deviation),
+            create_arg!('c', average_quadratic_deviation),
+            create_arg!('d', linear_coefficient_variation),
+            create_arg!('e', quadratic_coefficient_variation),
+            create_arg!('f', variance),
+        ];
+        let new_cmd = cmd.clone().args(&args);
+        
+        new_cmd
+    }
+    
+    pub fn update(&mut self, input_command: &ArgMatches) {
+         if input_command.get_flag("arithmetic_mean") {
+             self.call_parametrs[0] = true;
+         }
+         
+         if input_command.get_flag("geometric_mean") {
+             self.call_parametrs[1] = true;
+         }
+         
+         if input_command.value_source("generalized_mean") != None {
+             self.call_parametrs[2] = true;
+             if let Some(get_value) = input_command.get_one::<u32>("generalized_mean") {
+                 self.generalized_mean_value = *get_value;
+             }
+         }
+         if input_command.value_source("arithmetic_geometric_mean") != None {
+             self.call_parametrs[3] = true;
+             if let Some(get_value) = input_command.get_one::<f64>("arithmetic_geometric_mean") {
+                 self.arithmetic_geometric_mean_value = *get_value;
+             }
+         }
+         if input_command.value_source("modified_arithmetic_geometric_mean") != None {
+             self.call_parametrs[4] = true;
+             if let Some(get_value) = input_command.get_one::<f64>("modified_arithmetic_geometric_mean") {
+                 self.modified_arithmetic_geometric_mean_value = *get_value;
+             }
+         }
+         if input_command.get_flag("quasi_arithmetic_mean") {
+             self.call_parametrs[5] = true;
+         }
+         if input_command.value_source("truncated_mean") != None {
+             self.call_parametrs[6] = true;
+             if let Some(get_value) = input_command.get_one::<f64>("truncated_mean") {
+                 self.truncated_mean_value = *get_value;
+             }
+         }
+         if input_command.value_source("winsorizing_mean") != None {
+             self.call_parametrs[7] = true;
+             if let Some(get_value) = input_command.get_one::<f64>("winsorizing_mean") {
+                 self.winsorizing_mean_value = *get_value;
+             }
+         }
+         
+         if input_command.get_flag("median_mean") {
+             self.call_parametrs[8] = true;
+         }
+         if input_command.get_flag("moda_mean") {
+             self.call_parametrs[9] = true;
+         }
+         if input_command.get_flag("average_linear_deviation") {
+             self.call_parametrs[10] = true;
+         }
+         if input_command.get_flag("average_quadratic_deviation") {
+             self.call_parametrs[11] = true;
+         }
+         if input_command.get_flag("linear_coefficient_variation") {
+             self.call_parametrs[12] = true;
+         }
+         if input_command.get_flag("quadratic_coefficient_variation") {
+             self.call_parametrs[13] = true;
+         }
+         if input_command.get_flag("variance") {
+             self.call_parametrs[14] = true;
+         }
+    }
+    
+    pub fn play(&mut self, data: &[i64]) -> String {
+        let mut answer = String::new();
+        
+        if self.call_parametrs[0] {
+            answer += &format!("arithmetic mean: {}", arithmetic_mean(data));
+        }
+        if self.call_parametrs[1] {
+            answer += &format!("geometric mean: {}", geometric_mean(data));
+        }
+        if self.call_parametrs[2] {
+            answer += &generalized_mean::call(data, self.generalized_mean_value);
+        }
+        if self.call_parametrs[3] {
+            answer += &arithmetic_geometric_mean::call(data, self.arithmetic_geometric_mean_value);
+        }
+        if self.call_parametrs[4] {
+            answer += &modified_arithmetic_geometric_mean::call(data, self.modified_arithmetic_geometric_mean_value);
+        }
+        if self.call_parametrs[5] {
+            let fi = |x: f64| -> f64 { x.exp() + 2.0 * x * x + x + 5.0 };
+            
+            answer += &format!("quasi arithmetic (kolmogorov) mean: {}", quasi_arithmetic_mean(data, fi));
+        }
+        if self.call_parametrs[6] {
+            answer += &truncated_mean::call(data, self.truncated_mean_value);
+        }
+        if self.call_parametrs[7] {
+            answer += &winsorizing_mean::call(data, self.winsorizing_mean_value);
+        }
+        
+        if self.call_parametrs[8] {
+            answer += &format!("median mean: {}", median_mean(data));
+        }
+        if self.call_parametrs[9] {
+            answer += &format!("moda mean: {}", moda_mean(data));
+        }
+        if self.call_parametrs[10] {
+            answer += &format!("average linear deviation: {}", average_linear_deviation(data));
+        }
+        if self.call_parametrs[11] {
+            answer += &format!("average quadratic deviation: {}", average_quadratic_deviation(data));
+        }
+        if self.call_parametrs[12] {
+            answer += &format!("linear coefficient variation: {}", linear_coefficient_variation(data));
+        }
+        if self.call_parametrs[13] {
+            answer += &format!("quadratic coefficient variation: {}", quadratic_coefficient_variation(data));
+        }
+        if self.call_parametrs[14] {
+            answer += &format!("variance: {}", variance(data));
+        }
+        *self = Self::new();
+        
+        answer
+    }
 }

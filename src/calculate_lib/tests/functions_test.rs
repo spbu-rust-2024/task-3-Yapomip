@@ -20,13 +20,51 @@ fn test_generalized_mean() {
 
     assert!(
         (generalized_mean(&data, 4)
-            - (((1.0 * 1.0 * 1.0 * 1.0 + 2.0 * 2.0 * 2.0 * 2.0 + 3.0 * 3.0 * 3.0 * 3.0) / 3.0) as f64).powf(1.0 / 4.0))
-            < 0.00000001
+            - (((1.0 * 1.0 * 1.0 * 1.0 + 2.0 * 2.0 * 2.0 * 2.0 + 3.0 * 3.0 * 3.0 * 3.0) / 3.0)
+                as f64)
+                .powf(1.0 / 4.0))
+            < 0.00000001,
+        "generalized mean (4)"
     );
-    
+
     assert!(
-        (generalized_mean(&data, 0)
-            - ((1.0 * 2.0 * 3.0) as f64).powf(1.0 / 3.0))
-            < 0.00000001
+        (generalized_mean(&data, 3)
+            - (((1.0 * 1.0 * 1.0 + 2.0 * 2.0 * 2.0 + 3.0 * 3.0 * 3.0) / 3.0) as f64)
+                .powf(1.0 / 3.0))
+            < 0.00000001,
+        "generalized mean (3)"
+    );
+
+    assert!(
+        (generalized_mean(&data, 0) - ((1.0 * 2.0 * 3.0) as f64).powf(1.0 / 3.0)) < 0.00000001,
+        "generalized mean (0)"
     );
 }
+
+#[test]
+fn test_generalized_mean() {
+    let data: [i64; 3] = [1, 2, 3];
+
+    assert!(
+        (generalized_mean(&data, 4)
+            - (((1.0 * 1.0 * 1.0 * 1.0 + 2.0 * 2.0 * 2.0 * 2.0 + 3.0 * 3.0 * 3.0 * 3.0) / 3.0)
+                as f64)
+                .powf(1.0 / 4.0))
+            < 0.00000001,
+        "generalized mean (4)"
+    );
+
+    assert!(
+        (generalized_mean(&data, 3)
+            - (((1.0 * 1.0 * 1.0 + 2.0 * 2.0 * 2.0 + 3.0 * 3.0 * 3.0) / 3.0) as f64)
+                .powf(1.0 / 3.0))
+            < 0.00000001,
+        "generalized mean (3)"
+    );
+
+    assert!(
+        (generalized_mean(&data, 0) - ((1.0 * 2.0 * 3.0) as f64).powf(1.0 / 3.0)) < 0.00000001,
+        "generalized mean (0)"
+    );
+}
+

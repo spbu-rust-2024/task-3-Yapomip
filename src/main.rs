@@ -3,17 +3,26 @@ mod color_out;
 mod application;
 use application::*;
 
-use std::cmp::Ordering;
 use std::io::{self, Write};
+use clap::*;
+use clap::error::ErrorKind;
 
 fn main() {
+    let mut cmd = Command::new("my_super_puper_prog")
+        .arg(
+            Arg::new("exit")
+                .long("exit")
+                .help("exit")
+                .action(ArgAction::SetTrue)
+                .exclusive(true)
+        )
+        .no_binary_name(true);
     let mut app = App::new();
-
-    println!("---------------------");
-    println!("help     help program");
-    println!("---------------------");
-
-    loop {
+    let mut flag = true;
+    
+    cmd = App::add_args(cmd);
+    
+    while flag {
         print!("> ");
         io::stdout().flush().unwrap();
 
@@ -22,21 +31,23 @@ fn main() {
 
         let input_command_vector = input_string.split_whitespace().collect::<Vec<_>>();
         let input_command = input_command_vector.as_slice();
-
-        // input_command_vector
-        //     .iter()
-        //     .for_each(|s| println!(">>>>{s}"));
-
-        if input_command.cmp(["exit"].as_slice()) == Ordering::Equal {
-            break;
-        } else if input_command.cmp(["help"].as_slice()) == Ordering::Equal {
-            println!("---------------------");
-            println!("help     help program");
-            println!("exit     exit program");
-            app.play(&["-h"]);
-            println!("---------------------");
+        
+        let try_get_matches = cmd.try_get_matches_from_mut(input_command);
+        if let Ok(matches) = try_get_matches {
+            if matches.get_flag("exit") {
+                flag = false;
+            } else {
+                app.play(&matches);
+            }
         } else {
-            app.play(input_command);
+            let err = try_get_matches.unwrap_err();
+            
+            // dbg!(&err);
+            let _ = err.print();
+            // if try_get_matches.unwrap_err().kind() == ErrorKind::DisplayHelp {
+            //     let _ = cmd.print_long_help();
+            //     // let _ = cmd.print_help();
+            // }
         }
     }
 }
