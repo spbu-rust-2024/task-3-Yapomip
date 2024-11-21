@@ -5,7 +5,7 @@ pub fn linear_coefficient_variation(data: &[i64]) -> f64 {
     let x_ = arithmetic_mean(data);
 
     data.iter().for_each(|x| {
-        ans += *x as f64 - x_;
+        ans += (*x as f64 - x_).abs();
     });
     ans /= data.len() as f64;
     ans /= x_;

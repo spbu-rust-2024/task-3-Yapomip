@@ -227,8 +227,9 @@ impl Caller {
         }
         if self.call_parametrs[5] {
             let fi = |x: f64| -> f64 { x.exp() + 2.0 * x * x + x + 5.0 };
+            let fi_reverse = |x: f64| -> f64 { x.ln() };
             
-            answer += &format!("quasi arithmetic (kolmogorov) mean: {}", quasi_arithmetic_mean(data, fi));
+            answer += &format!("quasi arithmetic (kolmogorov) mean: {}", quasi_arithmetic_mean(data, fi, fi_reverse));
         }
         if self.call_parametrs[6] {
             answer += &truncated_mean::call(data, self.truncated_mean_value);

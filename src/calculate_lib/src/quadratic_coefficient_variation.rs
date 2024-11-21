@@ -8,8 +8,8 @@ pub fn quadratic_coefficient_variation(data: &[i64]) -> f64 {
         ans += (*x as f64 - x_) * (*x as f64 - x_);
     });
     ans /= data.len() as f64;
-    ans = ans.sqrt();
     ans /= x_;
+    ans = ans.sqrt();
 
     ans
 }
