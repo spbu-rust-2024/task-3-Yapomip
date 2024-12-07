@@ -50,7 +50,6 @@ fn test_modified_arithmetic_geometric_mean() {
     let a = modified_arithmetic_geometric_mean(100, 150, 900, epsilon);
     let b = modified_arithmetic_geometric_mean(150, 100, 900, epsilon);
 
-    // panic!("{} {} {}", a, b, a - b);
     assert!((a - b).abs() < epsilon,);
 
     assert!(

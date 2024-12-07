@@ -40,13 +40,7 @@ fn main() {
             }
         } else {
             let err = try_get_matches.unwrap_err();
-
-            // dbg!(&err);
             let _ = err.print();
-            // if try_get_matches.unwrap_err().kind() == ErrorKind::DisplayHelp {
-            //     let _ = cmd.print_long_help();
-            //     // let _ = cmd.print_help();
-            // }
         }
     }
 }
