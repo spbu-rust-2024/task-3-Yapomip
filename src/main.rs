@@ -3,9 +3,8 @@ mod color_out;
 mod application;
 use application::*;
 
-use std::io::{self, Write};
 use clap::*;
-use clap::error::ErrorKind;
+use std::io::{self, Write};
 
 fn main() {
     let mut cmd = Command::new("my_super_puper_prog")
@@ -14,14 +13,14 @@ fn main() {
                 .long("exit")
                 .help("exit")
                 .action(ArgAction::SetTrue)
-                .exclusive(true)
+                .exclusive(true),
         )
         .no_binary_name(true);
     let mut app = App::new();
     let mut flag = true;
-    
+
     cmd = App::add_args(cmd);
-    
+
     while flag {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -31,7 +30,7 @@ fn main() {
 
         let input_command_vector = input_string.split_whitespace().collect::<Vec<_>>();
         let input_command = input_command_vector.as_slice();
-        
+
         let try_get_matches = cmd.try_get_matches_from_mut(input_command);
         if let Ok(matches) = try_get_matches {
             if matches.get_flag("exit") {
@@ -41,7 +40,7 @@ fn main() {
             }
         } else {
             let err = try_get_matches.unwrap_err();
-            
+
             // dbg!(&err);
             let _ = err.print();
             // if try_get_matches.unwrap_err().kind() == ErrorKind::DisplayHelp {
