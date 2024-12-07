@@ -1,0 +1,10 @@
+[package]
+name = "task-3"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.20", features = ["derive"] }
+paste = "1.0.15"
+colored = "2.0.0"
+calculate_lib = { path = "src/calculate_lib" }
